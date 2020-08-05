@@ -1,0 +1,139 @@
+--Crude Oil -> Plastic Heavy Oil
+--Crude Oil -> Rubber Heavy Oil
+--Crude Oil -> Fuel Polymer Resin
+--Crude Oil -> (Alt) Polymer Resin Heavy Oil
+
+--Heavy Oil -> Residual Fuel
+--Polymer Resin + Water -> Residual Plastic (2x)
+
+--Plastic -> Empty Container
+--Empty Container + Fuel -> Packaged Fuel
+
+gpu = computer.getGPUs()[1]
+cp = component.proxy(component.findComponent("Control Panel")[1])
+
+--Clear screen, 0 for black 1 for white
+function cls(c)
+  w,h=gpu:getSize()
+  gpu:setForeground(c,c,c,1)
+  gpu:setBackground(c,c,c,1)
+  gpu:fill(0,0,w,h," ")
+  return w,h
+end--function
+
+--Percentage is 0.0-1.0
+function print_bar(percentage, x, y)
+  gpu:bindScreen(cp:getModule(x,y))
+  gpu:setSize(150,10)
+  w,h=cls(1)
+  gpu:setBackground(0,0,1,1)
+  pct_of_width = math.floor(percentage*(w-2))
+  gpu:fill(1,1,pct_of_width,h-2," ")
+  gpu:flush()
+  computer.skip()
+  event.pull(1)
+end--function
+
+--The name must be 10 characters or fewer!
+function print_label(percentage, name, x, y)
+  gpu:bindScreen(cp:getModule(x,y))
+  gpu:setSize(10,2)
+  w,h=cls(0)
+  gpu:setForeground(1,1,1,1)
+  fmt_str = string.format("%s:\r\n%.2f%%", name, percentage*100)
+  gpu:setText(0,0,fmt_str)
+  gpu:flush()
+  computer.skip()
+  event.pull(1)
+end--function
+
+--Turns the button red for ten seconds, then returns
+function display_flush_button(y)
+  btn = cp:getModule(8,y)
+  btn:setColor(1,0,0,0)
+  event.pull(10)
+  btn:setColor(0,1,0,0)
+end--function
+
+--Fluid storage must be named like "name Storage Buffer"
+function get_average_fluid_fill(name)
+  total, max = 0.0, 0.0
+  for _,buffer in pairs(component.proxy(component.findComponent(name .. " Storage Buffer"))) do
+    total = total + buffer:getFluidContent()
+    max = max + buffer:getMaxFluidContent()
+  end--for
+  if (max > 0.0) then
+    return total / max
+  else
+    return 0.0
+  end--if
+end--function
+
+function display(percent_full, name, row)
+  print_label(percent_full, name, 0, row)
+  print_bar(percent_full, 4, row)
+end--function
+
+--GOAL: If fuel gets low, stop packing fuel
+function check_fuel()
+  fuel_pct = get_average_fluid_fill("Fuel")
+  if (fuel_pct > 0.9) then
+    packager = component.proxy("5AE1432442D859F701EE958D18FB5704")
+    if (packager.potential < 1.0) then --packager:getMaxPotential()) then
+      packager.potential = packager:getMaxPotential()
+    else
+      for _,buffer in pairs(component.proxy(component.findComponent("Fuel Storage Buffer"))) do
+        print_label(buffer:getFluidContent()/buffer:getMaxFluidContent(), "FLUSHING", 4, 9)
+        buffer:flush()
+        display_flush_button(9)
+        fuel_pct = get_average_fluid_fill("Fuel")
+        break
+      end--for
+    end--if
+  elseif (fuel_pct < 0.2) then
+    packager = component.proxy("5AE1432442D859F701EE958D18FB5704")
+    if (packager.potential > packager:getMinPotential()) then
+      packager.potential = packager.potential * 0.5
+    end--if
+  end--if
+  return fuel_pct
+end--function
+
+--GOAL: If heavy oil too full, flush a buffer
+function check_heavy_oil()
+  fuel_pct = get_average_fluid_fill("Heavy Oil")
+  if (fuel_pct > 0.9) then
+      for _,buffer in pairs(component.proxy(component.findComponent("Heavy Oil Storage Buffer"))) do
+        print_label(buffer:getFluidContent()/buffer:getMaxFluidContent(), "FLUSHING", 4, 7)
+        buffer:flush()
+        display_flush_button(7)
+        fuel_pct = get_average_fluid_fill("Heavy Oil")
+        break
+      end--for
+  end--if
+  return fuel_pct
+end--function
+
+--GOAL: If crude oil empty, display alarm
+function check_crude_oil()
+  fuel_pct = get_average_fluid_fill("Crude Oil")
+  if (fuel_pct < 0.5) then
+    computer.beep()
+  end--if
+  return fuel_pct
+end--function
+
+wait_time = 10
+while true do
+  fuel_pct = check_fuel()
+  display(fuel_pct, "Fuel", 9)
+  event.pull(wait_time)
+
+  heavy_oil_pct = check_heavy_oil()
+  display(heavy_oil_pct, "Heavy Oil", 7)
+  event.pull(wait_time)
+
+  crude_oil_pct = check_crude_oil()
+  display(crude_oil_pct, "Crude Oil", 5)
+  event.pull(wait_time)
+end--while
