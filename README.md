@@ -15,4 +15,4 @@ Split on Demand | 1.1 | Samueras | https://pastebin.com/UsTwi3Q5
 FIN Console | 1.0 | NicholaScott | https://pastebin.com/0LUgUxqD
 GLint | 1.0 | NicholaScott | https://pastebin.com/sVSS1GtQ
 List menu example | 0.1 | ProgCat | https://gitlab.com/-/snippets/2003105
-Basic timer | 0.1 | ProgCat | https://gitlab.com/-/snippets/2004629
+Interval timer | 0.1 | ProgCat | https://gitlab.com/-/snippets/2004629
