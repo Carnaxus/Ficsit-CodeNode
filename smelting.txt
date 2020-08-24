@@ -1,0 +1,1046 @@
+--
+-- Created by IntelliJ IDEA.
+-- User: Roze
+-- Date: 2020-08-15
+-- Time: 11:51
+-- To change this template use File | Settings | File Templates.
+--
+
+
+local busses = {}
+local storages = {}
+local resources = {}
+local outputSplitters = {}
+local splitterBusMap = {}
+local sourceOutputSlot = 1
+local requestedItems = 0
+local autoCraft = false
+local doPurge = true
+local splitterComponentMap = {}
+local smelterReferences = {}
+
+
+
+local panel = component.proxy(component.findComponent("Smelting Manuver")[1])
+local testButton = panel:getModule(0,0)
+local purgeButton = panel:getModule(1,0)
+
+local craftAmountDisplay = panel:getModule(0, 10)
+local craftAmountPot = panel:getModule(4, 9)
+local craftProcessButton = panel:getModule(4, 10)
+local craftProcessButton2 = panel:getModule(5, 10)
+local craftProcessButton3 = panel:getModule(6, 10)
+local craftProcessButton4 = panel:getModule(7, 10)
+local craftProcessButton5 = panel:getModule(8, 10)
+
+local autoCraftButton = panel:getModule(10, 0)
+
+local craftRequested = panel:getModule(0, 3)
+local craftPassingby = panel:getModule(0, 5)
+
+local smeltingScreen = component.proxy(component.findComponent("Smelting Screen")[1])
+local gpu = computer.getGPUs()[1]
+
+
+gpu:bindScreen(smeltingScreen)
+gpu:setBackground(0,0,0,0)
+gpu:setsize (104,20)
+local screenW,screenH = gpu:getSize()
+gpu:fill(0,0,screenW,screenH," ")
+
+
+craftAmountDisplay:setSize(100)
+craftAmountDisplay:setMonospace(true)
+
+craftRequested:setSize(100)
+craftRequested:setMonospace(true)
+
+craftPassingby:setSize(100)
+craftPassingby:setMonospace(true)
+
+testButton:setColor(0,1,0,4)
+purgeButton:setColor(0,0,0,1)
+autoCraftButton:setColor(1,0, 0, 1)
+
+event.listen(testButton)
+event.listen(purgeButton)
+event.listen(craftProcessButton)
+event.listen(craftProcessButton2)
+event.listen(craftProcessButton3)
+event.listen(craftProcessButton4)
+event.listen(craftProcessButton5)
+event.listen(craftAmountPot)
+event.listen(autoCraftButton)
+
+
+----------------------------------------------------------------------------------
+----------------------------------------------------------------------------------
+--------------------------------- LINKED LIST ------------------------------------
+----------------------------------------------------------------------------------
+----------------------------------------------------------------------------------
+
+function createLinkedList()
+    return {
+        next = nil,
+        last = nil,
+        size = 0,
+        clear = function(list)
+            local i = list.first
+            while i do
+                i.next = nil
+                i.previous = nil
+                i.list = nil
+                i = i.next
+            end
+            list.next = nil
+            list.last = nil
+            list.size = 0
+        end,
+        add = function(list, content)
+            addToLinkedList(list, content)
+        end
+    }
+end
+
+function printLinkedList(list)
+    print ("[LIST]")
+    print (" * size: " .. tostring(list.size))
+    if list.first then
+        print (" * first: " .. tostring(list.first))
+    end
+    if list.last then
+        print (" * last: " .. tostring(list.last))
+    end
+    local item = list.first
+    while item do
+        if item.value then
+            print (" * * value: " .. tostring(list.first))
+        end
+        if item.first then
+            print (" * * first: " .. tostring(list.first))
+        end
+        if item.last then
+            print (" * * last: " .. tostring(list.last))
+        end
+        item = item.next
+    end
+end
+
+function addToLinkedList(list, content)
+    local item = {
+        value = content,
+        next = nil,
+        previous = nil,
+        list = list,
+        delete = function(t)
+            if t.next then
+                if t.prev then
+                    t.next.prev = t.prev
+                    t.prev.next = t.next
+                else
+                    -- this was the first node
+                    t.next.prev = nil
+                    t.list.first = t.next
+                end
+            elseif t.prev then
+                -- this was the last node
+                t.next.next = nil
+                t.list.last = t.prev
+            else
+                -- this was the only node
+                t.list.first = nil
+                t.list.last = nil
+            end
+            t.value = nil
+            t.next = nil
+            t.next = nil
+            t.list.size = t.list.size - 1
+        end
+    }
+    if list.last then
+        list.last.next = item
+        item.prev = list.last
+        list.last = item
+    else
+        -- this is the first node
+        list.first = item
+        list.last = item
+    end
+
+    list.size = list.size + 1
+end
+
+----------------------------------------------------------------------------------
+----------------------------------------------------------------------------------
+----------------------------------- NETWORK --------------------------------------
+----------------------------------------------------------------------------------
+----------------------------------------------------------------------------------
+
+local networkHandlers = {}
+local networkAdapter = component.proxy(component.findComponent("Smelting Manager Network Adapter")[1])
+
+networkAdapter:open(100)
+event.listen(networkAdapter)
+
+local addressing = {
+    inventoryManager = {
+        --networkID = "8B7CE8E5461CEE40F6402CA8B9C815DF"
+        networkID = "138CF8404ED4FEAB8097EEA272C9D5CA"
+    }
+}
+
+function networkHandler(port, func, subhandlers)
+    networkHandlers[port] = {
+        ["func"] = func,
+        ["subhandlers"] = subhandlers
+    }
+end
+
+networkAdapter:send(addressing.inventoryManager.networkID, 100, "reset", "smelting")
+
+
+----------------------------------------------------------------------------------
+----------------------------------------------------------------------------------
+----------------------------------- SMELTING -------------------------------------
+----------------------------------------------------------------------------------
+----------------------------------------------------------------------------------
+
+
+local craftingQueue = createLinkedList()
+
+
+busses['A'] = {
+    name = "A",
+    sourceSplitters = {
+        ["Iron Ore"] = component.proxy(component.findComponent("IronOreOutA")[1]),
+        ["Copper Ore"] = component.proxy(component.findComponent("CopperOreOutA")[1]),
+        ["Quartz"] = component.proxy(component.findComponent("QuartzOutA")[1]),
+        ["Caterium Ore"] = component.proxy(component.findComponent("CateriumOutA")[1]),
+        ["Coal"] = component.proxy(component.findComponent("CoalOutA")[1]),
+        ["Bauxite"] = component.proxy(component.findComponent("BauxiteOutA")[1])
+    },
+    queue = createLinkedList()
+}
+busses['B'] = {
+    name = "B",
+    sourceSplitters = {
+        ["Iron Ore"] = component.proxy(component.findComponent("IronOreOutB")[1]),
+        ["Copper Ore"] = component.proxy(component.findComponent("CopperOreOutB")[1]),
+        ["Quartz"] = component.proxy(component.findComponent("QuartzOutB")[1]),
+        ["Caterium Ore"] = component.proxy(component.findComponent("CateriumOutB")[1]),
+        ["Coal"] = component.proxy(component.findComponent("CoalOutB")[1]),
+        ["Bauxite"] = component.proxy(component.findComponent("BauxiteOutB")[1])
+    },
+    consumerSplitters = {
+        [1] = {
+
+        }
+    },
+    queue = createLinkedList()
+}
+local smelters = {
+    {
+        reference = component.proxy(component.findComponent("Smelter1")[1]),
+        busses = {busses.A, busses.B},
+        remaining = 0,
+        queue = {},
+        outputConnector = 1
+    },
+    {
+        reference = component.proxy(component.findComponent("Smelter2")[1]),
+        busses = {busses.A, busses.B},
+        remaining = 0,
+        queue = {},
+        outputConnector = 1
+    },
+    {
+        reference = component.proxy(component.findComponent("Smelter3")[1]),
+        busses = {busses.A, busses.B},
+        remaining = 0,
+        queue = {},
+        outputConnector = 1
+    },
+    {
+        reference = component.proxy(component.findComponent("Smelter4")[1]),
+        busses = {busses.A, busses.B},
+        remaining = 0,
+        queue = {},
+        outputConnector = 1
+    },
+    {
+        reference = component.proxy(component.findComponent("Smelter5")[1]),
+        busses = {busses.A, busses.B},
+        remaining = 0,
+        queue = {},
+        outputConnector = 1
+    },
+    {
+        reference = component.proxy(component.findComponent("Smelter6")[1]),
+        busses = {busses.A, busses.B},
+        remaining = 0,
+        queue = {},
+        outputConnector = 1
+    },
+    {
+        reference = component.proxy(component.findComponent("Smelter7")[1]),
+        busses = {busses.A, busses.B},
+        remaining = 0,
+        queue = {},
+        outputConnector = 1
+    },
+    {
+        reference = component.proxy(component.findComponent("Smelter8")[1]),
+        busses = {busses.A, busses.B},
+        remaining = 0,
+        queue = {},
+        outputConnector = 1
+    },
+    {
+        reference = component.proxy(component.findComponent("Foundry1")[1]),
+        busses = {busses.A, busses.B},
+        remaining = 0,
+        queue = {},
+        outputConnector = 2
+    },
+    {
+        reference = component.proxy(component.findComponent("Foundry2")[1]),
+        busses = {busses.A, busses.B},
+        remaining = 0,
+        queue = {},
+        outputConnector = 2
+    },
+    {
+        reference = component.proxy(component.findComponent("Foundry3")[1]),
+        busses = {busses.A, busses.B},
+        remaining = 0,
+        queue = {},
+        outputConnector = 2
+    },
+    {
+        reference = component.proxy(component.findComponent("Foundry4")[1]),
+        busses = {busses.A, busses.B},
+        remaining = 0,
+        queue = {},
+        outputConnector = 2
+    }
+}
+
+for i,s in pairs(smelters) do
+    for i2,b in pairs(s.busses) do
+        --table.insert(s.queue, b.name, {})
+        s.queue[b.name] = createLinkedList()
+    end
+    local connector = s.reference:getFactoryConnectors()[s.outputConnector]
+    smelterReferences[connector] = s
+    s.outConnector = connector
+    event.listen(connector)
+end
+
+
+
+local outputSplitters = {
+    {
+        reference = component.proxy(component.findComponent("Smelter1InB")[1]),
+        bus = busses.B,
+        manufacturer = smelters[1],
+        outputSlot = 1,
+        passthroughSlot = 2,
+        outputConnector = 2
+    },{
+        reference = component.proxy(component.findComponent("Smelter1InA")[1]),
+        bus = busses.A,
+        manufacturer = smelters[1],
+        outputSlot = 1,
+        passthroughSlot = 2,
+        outputConnector = 2
+    },{
+        reference = component.proxy(component.findComponent("Smelter2InB")[1]),
+        bus = busses.B,
+        manufacturer = smelters[2],
+        outputSlot = 0,
+        passthroughSlot = 1,
+        outputConnector = 2
+    },{
+        reference = component.proxy(component.findComponent("Smelter2InA")[1]),
+        bus = busses.A,
+        manufacturer = smelters[2],
+        outputSlot = 0,
+        passthroughSlot = 1
+    },{
+        reference = component.proxy(component.findComponent("Smelter3InB")[1]),
+        bus = busses.B,
+        manufacturer = smelters[3],
+        outputSlot = 0,
+        passthroughSlot = 1
+    },{
+        reference = component.proxy(component.findComponent("Smelter3InA")[1]),
+        bus = busses.A,
+        manufacturer = smelters[3],
+        outputSlot = 0,
+        passthroughSlot = 1
+    },{
+        reference = component.proxy(component.findComponent("Smelter4InB")[1]),
+        bus = busses.B,
+        manufacturer = smelters[4],
+        outputSlot = 0,
+        passthroughSlot = 1
+    },{
+        reference = component.proxy(component.findComponent("Smelter4InA")[1]),
+        bus = busses.A,
+        manufacturer = smelters[4],
+        outputSlot = 0,
+        passthroughSlot = 1
+    },{
+        reference = component.proxy(component.findComponent("Smelter5InA")[1]),
+        bus = busses.A,
+        manufacturer = smelters[5],
+        outputSlot = 0,
+        passthroughSlot = 1
+    },{
+        reference = component.proxy(component.findComponent("Smelter5InB")[1]),
+        bus = busses.B,
+        manufacturer = smelters[5],
+        outputSlot = 0,
+        passthroughSlot = 1
+    },{
+        reference = component.proxy(component.findComponent("Smelter6InA")[1]),
+        bus = busses.A,
+        manufacturer = smelters[6],
+        outputSlot = 0,
+        passthroughSlot = 1
+    },{
+        reference = component.proxy(component.findComponent("Smelter6InB")[1]),
+        bus = busses.B,
+        manufacturer = smelters[6],
+        outputSlot = 0,
+        passthroughSlot = 1
+    },{
+        reference = component.proxy(component.findComponent("Smelter7InA")[1]),
+        bus = busses.A,
+        manufacturer = smelters[7],
+        outputSlot = 0,
+        passthroughSlot = 1
+    },{
+        reference = component.proxy(component.findComponent("Smelter7InB")[1]),
+        bus = busses.B,
+        manufacturer = smelters[7],
+        outputSlot = 0,
+        passthroughSlot = 1
+    },{
+        reference = component.proxy(component.findComponent("Smelter8InA")[1]),
+        bus = busses.A,
+        manufacturer = smelters[8],
+        outputSlot = 0,
+        passthroughSlot = 1
+    },{
+        reference = component.proxy(component.findComponent("Smelter8InB")[1]),
+        bus = busses.B,
+        manufacturer = smelters[8],
+        outputSlot = 0,
+        passthroughSlot = 1
+    },{
+        reference = component.proxy(component.findComponent("Foundry1In1B")[1]),
+        bus = busses.B,
+        manufacturer = smelters[9],
+        outputSlot = 0,
+        passthroughSlot = 1
+    },{
+        reference = component.proxy(component.findComponent("Foundry1In1A")[1]),
+        bus = busses.A,
+        manufacturer = smelters[9],
+        outputSlot = 0,
+        passthroughSlot = 1
+    },{
+        reference = component.proxy(component.findComponent("Foundry2In1B")[1]),
+        bus = busses.B,
+        manufacturer = smelters[10],
+        outputSlot = 0,
+        passthroughSlot = 1
+    },{
+        reference = component.proxy(component.findComponent("Foundry2In1A")[1]),
+        bus = busses.A,
+        manufacturer = smelters[10],
+        outputSlot = 0,
+        passthroughSlot = 1
+    },{
+        reference = component.proxy(component.findComponent("Foundry3In1B")[1]),
+        bus = busses.B,
+        manufacturer = smelters[11],
+        outputSlot = 0,
+        passthroughSlot = 1
+    },{
+        reference = component.proxy(component.findComponent("Foundry3In1A")[1]),
+        bus = busses.A,
+        manufacturer = smelters[11],
+        outputSlot = 0,
+        passthroughSlot = 1
+    },{
+        reference = component.proxy(component.findComponent("Foundry4In1B")[1]),
+        bus = busses.B,
+        manufacturer = smelters[12],
+        outputSlot = 0,
+        passthroughSlot = 1
+    },{
+        reference = component.proxy(component.findComponent("Foundry4In1A")[1]),
+        bus = busses.A,
+        manufacturer = smelters[12],
+        outputSlot = 0,
+        passthroughSlot = 1
+    }
+}
+
+for i,v in pairs(busses) do
+    for i2,v2 in pairs(v.sourceSplitters) do
+        event.listen(v2)
+        --print("Listening for resources on source splitter "..i2)
+        splitterBusMap[v2.id] = v
+    end
+end
+
+for i,v in pairs(outputSplitters) do
+    splitterComponentMap[v.reference.id] = v
+    event.listen(v.reference)
+    --print("Listening for events on output splitter " .. tostring(i))
+end
+
+
+
+function calculateInventory(container, itemFilter)
+    local inv = container:getInventories()[1]
+    local count = 0
+    for i=0,inv.size-1,1 do
+        local stack = inv:getStack(i)
+        local stackCount = stack.count
+        if stackCount > 0 then
+            if itemFilter == nil or stack.item.type:getName() == itemFilter then
+                count = count + stack.count
+            elseif not itemFilter == nil then
+                print(stack.item.type:getName())
+            end
+        end
+    end
+    return count
+end
+
+
+function queue2(recipeName, count)
+    --print("Adding to queue2")
+    print(recipeName)
+    print(tostring(count))
+    craftingQueue:add({
+        recipeName = recipeName,
+        count = count
+    })
+    printLinkedList(craftingQueue)
+    processQueue()
+end
+
+function processQueue()
+    --print("Processing production queue ... ")
+    if craftingQueue.size then
+        local item = craftingQueue.first
+        while item do
+            local smelter = getLeastBusySmelter(item.value.recipeName)
+            --print(item.value.recipeName)
+            if smelter then
+                --print("Free smelter, project")
+                queue(smelter, item.value.recipeName, item.value.count)
+                local toRemove = item
+                item = item.next
+                toRemove:delete()
+            else
+                --print("Cannot produce yet: " .. item.value.recipeName)
+                item = item.next
+            end
+        end
+    else
+        --print("Queue empty")
+    end
+end
+
+function queue(smelter, recipeName, count)
+    local lowQue = 100000
+    local bus
+    if not count then
+        count = 1
+    end
+    --print("Queue called for recipe "..recipeName)
+    for i,v in pairs(smelter.busses) do
+        if v.queue.size < lowQue then
+            lowQue = v.queue.size
+            bus = v
+        end
+    end
+    if(smelter.remaining > 0) then
+       -- print("Smelter is busy")
+    end
+    --print("Selected bus " .. bus.name)
+    local ref = smelter.reference
+    --print(smelter.reference)
+    for i,recipe in pairs(ref:getRecipes()) do
+        if recipe:getName() == recipeName then
+            local _count = math.ceil(count / recipe:getProducts()[1].count)
+            for i2,v in pairs(recipe:getIngredients()) do
+                local item = {
+                    name = v.item:getName(),
+                    delivercount = v.count * _count,
+                    receivecount = v.count * _count
+                }
+                --print("Appended item " .. tostring(item) .. " to que")
+                addToLinkedList(bus.queue, item)
+                if not doPurge then
+                    addToLinkedList(smelter.queue[bus.name], item)
+                end
+                --printLinkedList(bus.queue)
+            end
+            smelter.remaining = smelter.remaining + _count * recipe:getProducts()[1].count
+            smelter.reference:setRecipe(recipe)
+            process(bus)
+            return true
+        end
+    end
+    --print("No Recipe match request")
+    return false
+end
+
+
+function process(bus)
+    if bus.queue.size > 0 then
+        --print("Stuff in queue")
+        local element = bus.queue.first
+        local item = element.value
+        local source = bus.sourceSplitters[item.name]
+        if source ~= nil then
+            local v = source:getInput()
+            --print (" ** item : " .. tostring(v))
+            if v then
+                if v.type:getName() == item.name then
+                    if source:canOutput(sourceOutputSlot) then
+                        if source:transferItem(sourceOutputSlot) then
+                            requestedItems = requestedItems + 1
+                            craftRequested:setText(tostring(requestedItems))
+                            item.delivercount = item.delivercount - 1
+                            if item.delivercount <= 0 then
+                                element:delete()
+                            end
+                        end
+                        --print(" ** Deliver Count after : " .. tostring(item.delivercount))
+                    else
+                        --print(" ** Slot full : ")
+                    end
+                else
+                    --print(" ** Invalid item on bus "..v.type:getName())
+                    testButton:setColor(1,0,0,5)
+                end
+            else
+                --print(" ** No Input at source")
+            end
+        else
+            --print(" ** No source splitter for resource: " .. item.name)
+        end
+    end
+end
+
+
+
+function purgeOutputSplitters()
+    for i,v in pairs(outputSplitters) do
+        local item = v.reference:getInput()
+        if item then
+            --print("Purgeing item from output splitter " .. tostring(i))
+            v.reference:transferItem(v.passthroughSlot)
+        end
+    end
+end
+
+function processOutput(splitter, transferrable)
+    local manuf = splitter.manufacturer
+    local item = manuf.queue[splitter.bus.name].first
+    transferrable = splitter.reference:getInput()
+    if transferrable then
+        print(transferrable)
+        local name = transferrable.type:getName()
+        --print(" ** Look for need for " .. name)
+        while item do
+            if item.value.name == name then
+                if splitter.reference:canOutput(splitter.outputSlot) then
+                    --printLinkedList(manuf.queue[splitter.bus.name])
+                    if splitter.reference:transferItem(splitter.outputSlot) then
+                        item.value.receivecount = item.value.receivecount - 1
+                        --print(" ** Receive Count after : " .. tostring(item.value.receivecount))
+                        if item.value.receivecount <= 0 then
+                            item:delete()
+                            --print(" ** Deleting item consumed")
+                        end
+                    end
+                    --print(" ** Splitter requested item")
+                end
+                return
+            end
+            item = item.next
+        end
+        --printLinkedList(manuf.queue[splitter.bus.name])
+        --print(" ** Splitter does not need it")
+        if splitter.reference:canOutput(splitter.passthroughSlot) then
+            splitter.reference:transferItem(splitter.passthroughSlot)
+        else
+            --print " ** Slot full"
+        end
+    else
+        --print("Unknown error: transferrable is null")
+    end
+end
+
+function getLeastBusySmelter(recipeName)
+    local max = 100000
+    local smelter
+    --print("Get least busy smelter... ")
+    for i,v in pairs(smelters) do
+        local valid
+        --print("Testing " .. v.reference.nick)
+        local c = v.remaining
+        for i2,v2 in pairs(v.queue) do
+            c = c + v2.size
+        end
+        if c == 0 then
+            for i,recipe in pairs(v.reference:getRecipes()) do
+                if recipe:getName() == recipeName then
+                    valid = true
+                    --print("Can produce : " .. recipeName)
+                end
+            end
+        else
+            --print("Queue not empty")
+        end
+        if valid then
+            local c = 0
+            for i2,v2 in pairs(v.queue) do
+                c = c + v2.size
+            end
+            if c < max then
+                max = c
+                smelter = v
+            end
+        end
+    end
+    if smelter then
+        --print("Got smelter " .. smelter.reference.nick)
+    end
+    return smelter
+end
+
+if doPurge then
+    purgeButton:setColor(1,0,0,4)
+    purgeOutputSplitters()
+    for i,v in pairs(busses) do
+        v.queue:clear()
+    end
+    for i,v in pairs(smelters) do
+        for i2,v2 in pairs(v.queue) do
+            v2:clear()
+        end
+    end
+end
+
+
+function processSmelterOutput(smelter)
+    smelter.remaining = smelter.remaining - 1
+    if smelter.remaining < 0 then
+        smelter.remaining = 0
+        --print("Mysterious extra item!")
+    end
+    --print(smelter.reference.nick .. " has " .. tostring(smelter.remaining) .. " items remaining to produce")
+    processQueue()
+end
+--queue(smelters[1], "Iron Ingot")
+
+local craftAmount = 1
+local passingBy = 0
+craftAmountDisplay:setText(" ")
+craftAmountDisplay:setText(tostring(craftAmount))
+craftRequested:setText(tostring(requestedItems))
+craftPassingby:setText(tostring(passingBy))
+
+function inTable(list, searchFor, column)
+    for k,v in pairs(list) do
+        if column then
+            if v[column] == searchFor then
+                return v
+            end
+        end
+    end
+    return nil
+end
+
+function findConnector(list, refColumn, connectorColumn, compareto)
+    for k,v in pairs(list) do
+        if v[refColumn] and v[connectorColumn] then
+            local c = v[refColumn]:getFactoryConnections()[v[connectorColumn]]
+            --print("c: " .. tostring(c))
+            if c == compareto then
+                return v
+            end
+        elseif not v[refColumn] then
+            --print "Ref Column null"
+        elseif not v[connectorColumn] then
+            --print "Connector Column null"
+        end
+    end
+end
+
+--queue2("Iron Ingot", 1)
+--queue2("Steel Ingot", 1)
+
+function processOutputEvent(comp, param)
+    local splt2 = splitterComponentMap[comp.id]
+    if(comp == outputSplitters[1].reference or comp == outputSplitters[2].reference) then
+        passingBy = passingBy + 1
+        craftPassingby:setText(tostring(passingBy))
+    end
+    --print("Event matched output splitter")
+    if doPurge then
+        if comp:canOutput(splt2.passthroughSlot) then
+            --print("Purge is active, passing on")
+            comp:transferItem(splt2.passthroughSlot)
+        else
+            --print("Output of " .. splt2.reference.nick .. " is full")
+        end
+    else
+        if param then
+            processOutput(splt2, param)
+        else
+            testButton:setColor(1,0,1,5)
+        end
+    end
+end
+
+function printScreen()
+    gpu:setBackground(0,0,0,0)
+    gpu:fill(0,0,screenW,screenH," ")
+
+    local y = 0
+    gpu:setForeground(1,1,1,0.8)
+    gpu:setText(0,y,"Queue"); y = y+1
+    local item = craftingQueue.first
+    if not item then
+        gpu:setText(3,y,"Nothing to do"); y = y+1
+    else
+        local i = 0
+        while item do
+            local v = item.value
+            i = i + 1
+            gpu:setText(3, y, v.recipeName)
+            gpu:setForeground(0.3,0.3,1,0.8)
+            gpu:setText(20,y,tostring(v.count)); y = y + 1
+            gpu:setForeground(1,1,1,0.8)
+            if y >= 17 then
+                break
+            end
+            item = item.next
+        end
+        if i < craftingQueue.size then
+            gpu:setText(3,y,tostring(craftingQueue.size - i) .. " additional items"); y = y+1
+        end
+    end
+    y = 0
+    gpu:setForeground(1,1,1,0.8)
+    gpu:setText(30,y,"Smelters"); y = y+1
+    local i = 1
+    local x = 32
+    local yStart = y
+    for k,v in pairs(smelters) do
+        gpu:setForeground(1,1,1,0.8)
+        gpu:setText(x,y, v.reference.nick .. " (#" .. tostring(i) .. ")"); y = y+1
+        gpu:setForeground(1,1,1,0.8)
+        if v.remaining > 0 then
+            gpu:setForeground(0,1,0,0.8)
+            gpu:setText(x + 2, y, "Working");
+            gpu:setForeground(1,1,1,0.8)
+            gpu:setText(x + 10, y, "Q'd:");
+            gpu:setForeground(0.3,0.3,1,0.8)
+            gpu:setText(x + 14, y, string.format("%4d", v.remaining));
+            y = y+1
+            if y + 3 > 20 then
+                x = x + 20
+                y = yStart
+            end
+            for k2,v2 in pairs(v.queue) do
+                local item = v2.first
+                while item do
+                    gpu:setForeground(1,1,1,0.8)
+                    gpu:setText(x + 3, y, k2 .. "> " .. item.value.name);
+                    gpu:setForeground(0.3,0.3,1,0.8)
+                    gpu:setText(x + 10, y, string.format("%3d", item.value.delivercount));
+                    gpu:setForeground(1,1,1,0.8)
+                    gpu:setText(x + 13, y,  "/");
+                    gpu:setForeground(0.3,0.3,1,0.8)
+                    gpu:setText(x + 14, y, string.format("%3d", item.value.receivecount));
+                    y = y + 1
+                    item = item.next
+                    if y + 3 > 20 then
+                        x = x + 20
+                        y = yStart
+                    end
+                end
+            end
+
+        else
+            gpu:setForeground(0.5,0.5,0.5,0.8)
+            gpu:setText(x + 2, y, "Idle");y = y+1
+        end
+        gpu:setForeground(1,1,1,0.8)
+        i = i + 1
+        if y + 3 > 20 then
+            x = x + 20
+            y = yStart
+        end
+    end
+    if doPurge then
+        gpu:setForeground(1,0,0,1)
+        gpu:setText(0, 19, "Purging is active!");y = y+1
+    end
+    gpu:flush()
+end
+
+printScreen()
+
+----------------------------------------------------------------------------------
+----------------------------------------------------------------------------------
+------------------------------- NETWORK HANDLERS ---------------------------------
+----------------------------------------------------------------------------------
+----------------------------------------------------------------------------------
+
+networkHandler(100, function(self, address, parameters, parameterOffset)
+    if self.subhandlers[parameters[parameterOffset]] then
+        local handler = self.subhandlers[parameters[parameterOffset]]
+        handler(address, parameters, parameterOffset + 1)
+    else
+        print ("No handler for " .. parameters[parameterOffset])
+    end
+end, {
+    postOrder = function(address, parameters, po)
+        local recipeName = parameters[po]
+        local amount = parameters[po + 1]
+        if not doPurge then
+            queue2(recipeName, amount)
+        end
+    end
+})
+
+
+----------------------------------------------------------------------------------
+----------------------------------------------------------------------------------
+------------------------------- EVENT PROCESSING ---------------------------------
+----------------------------------------------------------------------------------
+----------------------------------------------------------------------------------
+
+while true do
+    --local evt,comp,param = event.pull(5)
+    local result = {event.pull(0)}
+
+    if result[1] then
+        local evt = result[1]
+        print (evt)
+        if evt and result[2] then
+            local comp = result[2]
+            local param = result[3]
+            --print("Event " .. evt)
+            --print("'"..tostring(comp).."'")
+            if comp == testButton then
+                queue(smelters[1], "Iron Ingot")
+            elseif comp == craftAmountPot then
+                if evt == "PotRotate" then
+                    if param then
+                        craftAmount = craftAmount - 1
+                    else
+                        craftAmount = craftAmount + 1
+                    end
+                    if craftAmount > 10 then
+                        craftAmount = 10
+                    elseif craftAmount < 0 then
+                        craftAmount = 0
+                    end
+                    craftAmountDisplay:setText(tostring(craftAmount))
+                end
+            elseif comp == craftProcessButton then
+                for i=1,craftAmount,1 do
+                    queue2("Iron Ingot", 1)
+                end
+            elseif comp == craftProcessButton2 then
+                for i=1,craftAmount,1 do
+                    queue2("Copper Ingot", 1)
+                end
+            elseif comp == craftProcessButton3 then
+                queue2("Iron Ingot", craftAmount)
+            elseif comp == craftProcessButton4 then
+                queue2("Copper Ingot", craftAmount)
+            elseif comp == craftProcessButton5 then
+                queue2("Steel Ingot", craftAmount)
+            elseif comp == purgeButton then
+                if doPurge then
+                    doPurge = false
+                    purgeButton:setColor(0,0,0,1)
+                else
+                    doPurge = true
+                    purgeButton:setColor(1,0,0,4)
+                    requestedItems = 0
+                    passingBy = 0
+                    craftRequested:setText(tostring(requestedItems))
+                    craftPassingby:setText(tostring(passingBy))
+                    craftingQueue:clear()
+                    purgeOutputSplitters()
+                end
+            elseif smelterReferences[comp] then
+                processSmelterOutput(smelterReferences[comp])
+                --print("Event matched smelter")
+            elseif tostring(comp) == "FactoryConnection" then
+                --print(comp)
+                local smelterConnector = inTable(smelterReferences, comp, "outConnector")
+                --local resourceAddConnector = findConnector(autoTargetResources, "container", "containerOutConnector", comp)  --inTable(resources, comp, "containerInConnector")
+                if smelterConnector then
+                    --print("Smelter Connector... ")
+                    print(tostring(param))
+                    processSmelterOutput(smelterConnector)
+                    if param then
+                        --print("Item : " .. param.type:getName())
+                    end
+                else
+                    --print ("Unreferenced factory connector")
+                end
+            else
+                local splt1 = splitterBusMap[comp.id]
+                local splt2 = splitterComponentMap[comp.id]
+                if splt1 ~= nil then
+                    --print("Event matched input splitter")
+                    process(splt1)
+                elseif splt2 ~= nil then
+                    processOutputEvent(comp, param)
+                else
+                    --print("No such component in references")
+                    testButton:setColor(0,0,1,5)
+                end
+            end
+        elseif evt == "NetworkMessage" then
+            local address = result[3]
+            local port = result[4]
+            print ("NM: "..address)
+            if networkHandlers[port] then
+                networkHandlers[port]:func(address, result, 5)
+            else
+                print ( "No handler for " .. tostring(port))
+            end
+
+        end
+    else
+        for i,splitter in pairs(outputSplitters) do
+            local item = splitter.reference:getInput()
+            if item then
+                processOutputEvent(splitter.reference, item)
+            end
+        end
+        for i,bus in pairs(busses) do
+            process(bus)
+        end
+    end
+    printScreen()
+end

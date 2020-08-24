@@ -1,0 +1,58 @@
+-- This script runs on one computer, and it will automatically
+-- update the colors of all vehicle scanners conencted to the
+-- same network as it. You just need the give them a common
+-- nick for this program to filter for. You can change the red,
+-- green, blue, and opacity values of the beams for when the
+-- scanner is active (at least one vehicle on it) or inactive
+-- (no vehicles on it). The computer does not need to be
+-- restarted; the script will automatically detect new scanners
+-- as they are added to your network. It may take up to five
+-- seconds to detect new vehicle scanners. The script takes
+-- more RAM the more vehicle scanners you have.
+
+-- Common nick:
+scannerNick = "VehicleScanner"
+
+-- Color of scanner beams when active:
+ar, ag, ab, ao = 0.2, 0.2, 1.0, 5.0
+
+-- Color of scanner beams when inactive:
+ir, ig, ib, io = 0.2, 0.2, 1.0, 1.0
+
+-- Time between loops, skipped if needed:
+delay = 5
+
+----------
+
+vehicles = {}
+
+while true do
+ scanners = component.proxy(component.findComponent(scannerNick))
+ for key,value in pairs(vehicles) do
+  if value == 0 then vehicles[key] = nil end
+ end
+ for _,s in pairs(scanners) do
+  event.listen(s)
+  if not vehicles[s.id] then
+   vehicles[s.id] = 0
+  end
+ end
+ for _,s in pairs(scanners) do
+  if vehicles[s.id] > 0 then
+   s:setColor(ar, ag, ab, ao)
+  elseif vehicles[s.id] == 0 then
+   s:setColor(ir, ig, ib, io)
+  else
+   s:setColor(ir, ig, ib, io)
+   vehicles[s.id] = 0
+  end
+ end
+ eventType, eventSender = event.pull(delay)
+ for _,s in pairs(scanners) do
+  if eventType == "OnVehicleEnter" and eventSender == s then
+   vehicles[s.id] = vehicles[s.id] + 1
+  elseif eventType == "OnVehicleExit" and eventSender == s then
+   vehicles[s.id] = vehicles[s.id] - 1
+  end
+ end
+end
