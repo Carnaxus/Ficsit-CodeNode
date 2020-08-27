@@ -22,3 +22,4 @@ Script Name | Version | Author
 [Smelting (temp. name)](https://github.com/Carnaxus/Ficsit-CodeNode/blob/master/smelting.txt) | 1.0 | Roze
 [Task Manager](https://gitlab.com/-/snippets/2005931) | 0.21.532 rc11 beta (2.0) | ProgCat
 [String Utilities](https://gitlab.com/-/snippets/2007247) | 1.0 | ProgCat
+[CatOS](https://gitlab.com/progcat/catos) | 0.1 | ProgCat
