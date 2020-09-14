@@ -1,0 +1,6 @@
+local comps = {}
+for _, i in pairs (component.proxy(component.findComponent(""))) do
+    if i:getTypes()[1]~="Computer" then
+        table.insert(comps, i)
+    end
+end

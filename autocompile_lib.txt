@@ -1,0 +1,27 @@
+computer = {
+    restart  = function() end,
+    beep = function() end,
+    stop = function() end,
+    panic = function(error) end,
+    reset = function() end,
+    skip = function() end,
+    getEEPROM = function() end,
+    setEEPROM = function(code) end,
+    time = function() end,
+    millis = function() end,
+    getGPUs = function() end,
+    getScreens = function() end,
+}
+
+component = {
+    proxy = function(componentID) end,
+    findComponent = function(searchString) end
+}
+
+event = {
+    listen = function(component) end,
+    pull = function(timeout) end,
+    ignore = function(...) end,
+    ignoreAll = function() end,
+    clear = function() end,
+}

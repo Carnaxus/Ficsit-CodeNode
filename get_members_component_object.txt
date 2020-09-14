@@ -1,0 +1,5 @@
+object = component.proxy(component.findComponent("Storage - Plastics")[1])
+
+for key,value in pairs(object:getMembers()) do
+ print(key,value)
+end
