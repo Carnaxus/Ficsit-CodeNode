@@ -8,7 +8,7 @@ For now, here's the list:
 Script Name | Version | Author | Description
 ------------|-------------|-------------|------------|
 [Boot loader for multithreading your scripts](https://pastebin.com/gMcYkDhR) | 1.0 | Panakotta00 | Here is a small boot-loader code you can use for it in the eeprom: just make sure you have only one drive installed which then contains the OS.  **WARNING: BETA BRANCH ONLY** (for now)
-[Storage Monitor](https://pastebin.com/jKbt60Lk) | 1.4 | Trollfaust | Monitor all your Storage with one screen with numbers and a status bar for each container or each item.  Compatible with FIN 0.0.8
+[Storage Monitor](https://pastebin.com/W5e254WW) | 2.0 | Trollfaust | Monitor all your Storage with one screen with numbers and a status bar for each container or each item.  Compatible with FIN 0.0.8
 [Power Monitor](https://pastebin.com/DDy1sRUq) | 2.0 | Talos Maltalomar (taken over from Trollfaust) | Simple power monitor system to show a graph of your power usage on a large screen.
 [Oil/Fluid Buffer Flush](https://github.com/Carnaxus/Ficsit-CodeNode/blob/master/buffernooverflow.txt) | 1.0 | Franimus | Flushes a random fluid buffer when your total storage is over 90% full in order to prevent multiple output recipes from getting stuck.
 [Pong](https://pastebin.com/KyB1tKmT) | 1.0 | Trollfaust | Just a little fun project
