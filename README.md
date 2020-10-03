@@ -34,11 +34,6 @@ Script Name | Version | Description
 [Storage Monitor English Learning Edition](https://pastebin.com/KFnSnJ9q) | 2.0 | Version of my Storage Monitor Script v2.0 with English Beginner Comments for learning purposes
 [Storage Monitor German Learning Edition](https://pastebin.com/UNAtzadE) | 2.0 | Version of my Storage Monitor Script v2.0 with German Beginner Comments for learning purposes
 [Pong](https://pastebin.com/KyB1tKmT) | 1.0 | Just a little fun project
-
-### Talos Maltomar
-[Changelogs](https://github.com/Carnaxus/Ficsit-CodeNode/blob/master/talos_maltomar_changelog.md)
-Script Name | Version | Description
-------------|-------------|-------------|
 [Power Monitor](https://pastebin.com/DDy1sRUq) | 2.0 | Simple power monitor system to show a graph of your power usage on a large screen.
 
 ### Franimus
