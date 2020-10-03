@@ -19,9 +19,13 @@ Script Name | Version | Description
 [List menu example](https://gitlab.com/-/snippets/2003105) | 0.1 pre-pre-pre-alpha (1.0) | List menu example, can use for selection, confirmation dialog.
 [Interval timer](https://gitlab.com/-/snippets/2004629) | 1.0 | An implementation of a timer, calling functions at interval of time.  **IMPORTANT** Don't block the callback!
 [Network Card Example](https://gitlab.com/-/snippets/2005597) | 1.0 | Shows basic usage of the Network Card.
-[Task Manager](https://gitlab.com/-/snippets/2005931) | 0.21.532 rc11 beta (2.0) | Multitasking module with example, combined invterval calling, and able to shut the thread outside of the program.
+[Task Manager](https://gitlab.com/-/snippets/2005931) | 0.25.962 rc3 alpha (3.0) | Multitasking module with example, combined invterval calling, and able to shut the thread outside of the program.
 [String Utilities](https://gitlab.com/-/snippets/2007247) | 1.0 | This module allows you to manipulate strings easier, including split text, join string array into one string, text wrapping, get key from keyboard input, path parsing, and more.
 [CatOS](https://gitlab.com/progcat/catos) | 0.2 Beta | An operating system written by a fkin cat, it comes with a FISH, fake multithread environment and bugs.
+[Require Implementation](https://gitlab.com/-/snippets/2018484) | 1.0 | Self-explanitory.
+[Event Dispatcher](https://gitlab.com/-/snippets/2018485) | 1.0 | With this, you coroutine only receive what they are listening to, isolate from other coroutines.  And you wont have to worry about discard events from event.pull, cuz I catch it all for you! 
+NO MORE MISSING EVENTS!  **Requires Task Manager, Require Implementation, and [fifo.lua](https://github.com/daurnimator/fifo.lua/blob/master/fifo.lua)**
+[Coroutine Example](https://gitlab.com/-/snippets/2019017) | 1.0 | TaskMgr Example for LuucEarth
 
 ### Trollfaust
 [Changelogs](https://github.com/Carnaxus/Ficsit-CodeNode/blob/master/trollfaust_changelog.md)
