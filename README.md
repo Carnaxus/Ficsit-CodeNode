@@ -23,8 +23,7 @@ Script Name | Version | Description
 [String Utilities](https://gitlab.com/-/snippets/2007247) | 1.0 | This module allows you to manipulate strings easier, including split text, join string array into one string, text wrapping, get key from keyboard input, path parsing, and more.
 [CatOS](https://gitlab.com/progcat/catos) | 0.2 Beta | An operating system written by a fkin cat, it comes with a FISH, fake multithread environment and bugs.
 [Require Implementation](https://gitlab.com/-/snippets/2018484) | 1.0 | Self-explanitory.
-[Event Dispatcher](https://gitlab.com/-/snippets/2018485) | 1.0 | With this, you coroutine only receive what they are listening to, isolate from other coroutines.  And you wont have to worry about discard events from event.pull, cuz I catch it all for you! 
-NO MORE MISSING EVENTS!  **Requires Task Manager, Require Implementation, and [fifo.lua](https://github.com/daurnimator/fifo.lua/blob/master/fifo.lua)**
+[Event Dispatcher](https://gitlab.com/-/snippets/2018485) | 1.0 | With this, you coroutine only receive what they are listening to, isolate from other coroutines.  And you wont have to worry about discard events from event.pull, cuz I catch it all for you!  NO MORE MISSING EVENTS!  **Requires Task Manager, Require Implementation, and [fifo.lua](https://github.com/daurnimator/fifo.lua/blob/master/fifo.lua)**
 [Coroutine Example](https://gitlab.com/-/snippets/2019017) | 1.0 | TaskMgr Example for LuucEarth
 
 ### Trollfaust
