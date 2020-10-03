@@ -6,14 +6,14 @@ Currently, the CodeNode simply hosts links to what people have put into the [FIC
 For now, here's the list, separated by author:
 
 ### Panakotta00
-[Changelogs](https://github.com/Carnaxus/Ficsit-CodeNode/blob/master/panakotta_changelog.md)
+[Changelog](https://github.com/Carnaxus/Ficsit-CodeNode/blob/master/panakotta_changelog.md)
 Script Name | Version | Description
 ------------|-------------|-------------|
 [Boot loader for multithreading your scripts](https://pastebin.com/gMcYkDhR) | 1.0 | Here is a small boot-loader code you can use for it in the eeprom: just make sure you have only one drive installed which then contains the OS.  **WARNING: BETA BRANCH ONLY** (for now)
 [Dynamic Train Map](https://pastebin.com/x8ByfD5T) | 1.0 | This is a dynamic train map, that dynamicaly generates the track layout and prints it and all the trains driving on it with a live feed of those trains.
 
 ### ProgCat
-[Changelogs](https://github.com/Carnaxus/Ficsit-CodeNode/blob/master/progcat_changelog.md)
+[Changelog](https://github.com/Carnaxus/Ficsit-CodeNode/blob/master/progcat_changelog.md)
 Script Name | Version | Description
 ------------|-------------|-------------|
 [List menu example](https://gitlab.com/-/snippets/2003105) | 0.1 pre-pre-pre-alpha (1.0) | List menu example, can use for selection, confirmation dialog.
@@ -27,7 +27,7 @@ Script Name | Version | Description
 [Coroutine Example](https://gitlab.com/-/snippets/2019017) | 1.0 | TaskMgr Example for LuucEarth
 
 ### Trollfaust
-[Changelogs](https://github.com/Carnaxus/Ficsit-CodeNode/blob/master/trollfaust_changelog.md)
+[Changelog](https://github.com/Carnaxus/Ficsit-CodeNode/blob/master/trollfaust_changelog.md)
 Script Name | Version | Description
 ------------|-------------|-------------|
 [Storage Monitor](https://pastebin.com/W5e254WW) | 2.0 | Monitor all your Storage with one screen with numbers and a status bar for each container or each item.  Compatible with FIN 0.0.8
@@ -37,33 +37,33 @@ Script Name | Version | Description
 [Power Monitor](https://pastebin.com/DDy1sRUq) | 2.0 | Simple power monitor system to show a graph of your power usage on a large screen.
 
 ### Franimus
-[Changelogs](https://github.com/Carnaxus/Ficsit-CodeNode/blob/master/franimus_changelog.md)
+[Changelog](https://github.com/Carnaxus/Ficsit-CodeNode/blob/master/franimus_changelog.md)
 Script Name | Version | Description
 ------------|-------------|-------------|
 [Oil/Fluid Buffer Flush](https://github.com/Carnaxus/Ficsit-CodeNode/blob/master/buffernooverflow.txt) | 1.0 | Flushes a random fluid buffer when your total storage is over 90% full in order to prevent multiple output recipes from getting stuck.
 
 ### Samueras
-[Changelogs](https://github.com/Carnaxus/Ficsit-CodeNode/blob/master/samueras_changelog.md)
+[Changelog](https://github.com/Carnaxus/Ficsit-CodeNode/blob/master/samueras_changelog.md)
 Script Name | Version | Description
 ------------|-------------|-------------|
 [Split on Demand](https://pastebin.com/UsTwi3Q5) | 1.1 | Splits items of a belt if any connected machine gets under 20 items in the input slot.
 [Add Components to Computers](https://github.com/Carnaxus/Ficsit-CodeNode/blob/master/component_add.txt) | 1.0 | Adds all components to computers except the computer stuff
 
 ### NicholaScott
-[Changelogs](https://github.com/Carnaxus/Ficsit-CodeNode/blob/master/nicholascott_changelog.md)
+[Changelog](https://github.com/Carnaxus/Ficsit-CodeNode/blob/master/nicholascott_changelog.md)
 Script Name | Version | Description
 ------------|-------------|-------------|
 [FIN Console](https://pastebin.com/0LUgUxqD) | 1.0 | A sleek and rather robust terminal featuring most of the commands you'll need (and the ability for you to add more).
 [GLint](https://pastebin.com/sVSS1GtQ) | 1.0 | A text editor for editing files from the command line, built off the extension library.
 
 ### Esper
-[Changelogs](https://github.com/Carnaxus/Ficsit-CodeNode/blob/master/esper_changelog.md)
+[Changelog](https://github.com/Carnaxus/Ficsit-CodeNode/blob/master/esper_changelog.md)
 Script Name | Version | Description
 ------------|-------------|-------------|
 [Vehicle scanner lights](https://github.com/Carnaxus/Ficsit-CodeNode/blob/master/Vehicle_Scanner_Lights.txt) | 1.0 | Shows when a vehicle is on a vehicle scanner via the lights on the scanner.  Works for multiple scanners off of one computer
 
 ### Roze
-[Changelogs](https://github.com/Carnaxus/Ficsit-CodeNode/blob/master/roze_changelog.md)
+[Changelog](https://github.com/Carnaxus/Ficsit-CodeNode/blob/master/roze_changelog.md)
 Script Name | Version | Description
 ------------|-------------|-------------|
 [Roze's Autofactory](https://github.com/RozeDoyanawa/FicsitAutoFactory) | 1.0 | For anyone interested, here is all the code for my autofactory for use as a reference.  **WARNING: Do not use directly unless you set up your factory to exactly match Roze's**
@@ -71,19 +71,26 @@ Script Name | Version | Description
 [New "Render" example](https://gist.github.com/RozeDoyanawa/38f3727243d6b3e1cd8dae7cefba71bb) | 1.0 | LUA code for posted new "render," incomplete but shows how it can be done.
 
 ### Cale
-[Changelogs](https://github.com/Carnaxus/Ficsit-CodeNode/blob/master/cale_changelog.md)
+[Changelog](https://github.com/Carnaxus/Ficsit-CodeNode/blob/master/cale_changelog.md)
 Script Name | Version | Description
 ------------|-------------|-------------|
 [Production Display + Priomerger + Throughput Counter](https://github.com/Carnaxus/Ficsit-CodeNode/blob/master/prod-display-priomerger-counters.zip) | 1.0 | The code and a bit of documenataion for the production display, priomerger, and throughput counters I made.
 
 ### evilgenius
-[Changelogs](https://github.com/Carnaxus/Ficsit-CodeNode/blob/master/evilgenius_changelog.md)
+[Changelog](https://github.com/Carnaxus/Ficsit-CodeNode/blob/master/evilgenius_changelog.md)
 Script Name | Version | Description
 ------------|-------------|-------------|
 [Get all members for a given object](https://github.com/Carnaxus/Ficsit-CodeNode/blob/master/get_members_component_object.txt) | 1.0 | Get all members for a given object; this can be done from the ID or from the NAME using findComponent.
 
 ### MarcioHuser
-[Changelogs](https://github.com/Carnaxus/Ficsit-CodeNode/blob/master/marciohuser_changelog.md)
+[Changelog](https://github.com/Carnaxus/Ficsit-CodeNode/blob/master/marciohuser_changelog.md)
 Script Name | Version | Description
 ------------|-------------|-------------|
 [Sample script for Efficiency Checker Mod](https://drive.google.com/file/d/1imu2WB6WT01VPZKMsonB6u1BSUH22KrA/view?usp=sharing) | 1.0 | A sample script to use with Efficiency Checker Mod.
+
+### manaphoenix
+[Changelog](https://github.com/Carnaxus/Ficsit-CodeNode/blob/master/manaphoenix_changelog.md)
+Script Name | Version | Description
+------------|-------------|-------------|
+Color Module | 1.0 | Includes a table full of default colors along with two functions to convert from RGB and from HEX. The HEX supports both 3 and 6 long hex codes, the # is optional. The Hex takes in a string value, and the RGB takes (r,g,b) as numbers from 0-255. The return from both functions is a table of {R,G,B} as 0-1 each.
+UUID Module | 1.0 | Lets you generate a 128 bit identifier in the {8, 4, 4, 4, 12} style.
