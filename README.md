@@ -92,5 +92,12 @@ Script Name | Version | Description
 [Changelog](https://github.com/Carnaxus/Ficsit-CodeNode/blob/master/manaphoenix_changelog.md)
 Script Name | Version | Description
 ------------|-------------|-------------|
-Color Module | 1.0 | Includes a table full of default colors along with two functions to convert from RGB and from HEX. The HEX supports both 3 and 6 long hex codes, the # is optional. The Hex takes in a string value, and the RGB takes (r,g,b) as numbers from 0-255. The return from both functions is a table of {R,G,B} as 0-1 each.
-UUID Module | 1.0 | Lets you generate a 128 bit identifier in the {8, 4, 4, 4, 12} style.
+[Filesystem Loader](https://pastebin.com/UQsyvXYs) | 1.0 | A very simple filesystem loader to load a file on your in-game hard drive
+[Color Module](https://pastebin.com/52xt6bLn) | 1.0 | Includes a table full of default colors along with two functions to convert from RGB and from HEX. The HEX supports both 3 and 6 long hex codes, the # is optional. The Hex takes in a string value, and the RGB takes (r,g,b) as numbers from 0-255. The return from both functions is a table of {R,G,B} as 0-1 each.
+[UUID Module](https://pastebin.com/7rTTKDqk) | 1.0 | Lets you generate a 128 bit identifier in the {8, 4, 4, 4, 12} style.
+
+### LuucEarth
+[Changelog](https://github.com/Carnaxus/Ficsit-CodeNode/blob/master/luuc_earth_changelog.md)
+Script Name | Version | Description
+------------|-------------|-------------|
+[Alphabetized Storage Monitor](https://pastebin.com/PQqDwKX0) | 1.0 | Alphabetized Storage Monitor with Container Location listing based loosely on work by Trollfaust with added help of str_utils from ProgCat
