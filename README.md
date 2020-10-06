@@ -35,6 +35,7 @@ Script Name | Version | Description
 [Storage Monitor German Learning Edition](https://pastebin.com/UNAtzadE) | 2.0 | Version of my Storage Monitor Script v2.0 with German Beginner Comments for learning purposes
 [Pong](https://pastebin.com/KyB1tKmT) | 1.0 | Just a little fun project
 [Power Monitor](https://pastebin.com/DDy1sRUq) | 2.0 | Simple power monitor system to show a graph of your power usage on a large screen.
+[Power Monitor Carnaxus Edition](https://github.com/Carnaxus/Ficsit-CodeNode/blob/master/power_monitor_carn.lua) | 1.0 | Same as above but shows a whole number with no decimals
 
 ### Franimus
 [Changelog](https://github.com/Carnaxus/Ficsit-CodeNode/blob/master/franimus_changelog.md)
