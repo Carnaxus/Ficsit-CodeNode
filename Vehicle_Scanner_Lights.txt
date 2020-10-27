@@ -40,19 +40,15 @@ while true do
  for _,s in pairs(scanners) do
   if vehicles[s.id] > 0 then
    s:setColor(ar, ag, ab, ao)
-  elseif vehicles[s.id] == 0 then
-   s:setColor(ir, ig, ib, io)
   else
    s:setColor(ir, ig, ib, io)
    vehicles[s.id] = 0
   end
  end
  eventType, eventSender = event.pull(delay)
- for _,s in pairs(scanners) do
-  if eventType == "OnVehicleEnter" and eventSender == s then
-   vehicles[s.id] = vehicles[s.id] + 1
-  elseif eventType == "OnVehicleExit" and eventSender == s then
-   vehicles[s.id] = vehicles[s.id] - 1
-  end
+ if eventType == "OnVehicleEnter" then
+  vehicles[eventSender.id] = vehicles[eventSender.id] + 1
+ elseif eventType == "OnVehicleExit"
+  vehicles[eventSender.id] = vehicles[eventSender.id] - 1
  end
 end
